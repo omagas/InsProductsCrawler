@@ -31,6 +31,7 @@ config = configparser.ConfigParser()
 config.read('properties.ini')
 target_url=config['PRO']['target_url']
 my_path=config['PRO']['my_path']
+
 # then continue your script
 # 關閉通知
 options = webdriver.ChromeOptions()
@@ -49,23 +50,15 @@ driver.get(target_url)
 #time.sleep(5)
 
 
-
-
 source = driver.page_source
 soup1 = BeautifulSoup(source)  
 ul=soup1.find('ul',{'class':'list-product-block'})
-#li=ul.find_all('li')[0]
-#h6=li.find_all('h6')[0]
-#a=li.find_all('a',{'class':'dm-download-block'})
 
 
 h6=ul.select('li > div.left-part')
 ahref=ul.select('li > div.right-part > a.dm-download-block')
 
-#print(a.get('href'))
-#author =  div.select('div > a > img')
-
-
+#與本地端資料庫中的商品值做比較函式
 def merge_url_func(results_for_merge):
     print(pd.__version__)
     # print in tabular format 
@@ -85,12 +78,13 @@ def merge_url_func(results_for_merge):
     first_from=first_df["標題"]+first_df["連結"]
     second_to=second_df["標題"]+second_df["連結"]
 
-    
+    #完全相同
     if first_df.equals(second_df):
         print('Exactly the same.')
         data_str = "排程Complete Time = " + current_time +"\n Exactly the same"
         resul_html="Exactly the same."
         
+    #數量相同但值有差異
     elif(first_df.shape==second_df.shape):
         print('somthing difference. type1')
         #compare_result=first_df.compare(second_df)
@@ -100,7 +94,7 @@ def merge_url_func(results_for_merge):
 
         data_str = "排程Complete Time = " + current_time +"\n somthing difference type1:"
          
-        
+    #完全相同    
     else:   
         print('somthing difference. type2')
         
@@ -129,13 +123,10 @@ def merge_url_func(results_for_merge):
     else:
         send_message(data_str+"\n",resul_html)
     results_for_merge.to_csv(my_path+'transgolbal_origin.csv',encoding = 'utf-8') #存檔  
-    
-    #Keep all original rows and columns 
-    #compare_result_all=first_df.compare(second_df,keep_shape=True)  
+
     
 
-
-
+#解析頁面DOM並抓取商品值函式
 def crawler_get_productlis(_titles,_links):
     
     productlis=driver.find_elements_by_xpath("//*[@class='list-product-block   space-element-top-default']/li")
@@ -150,14 +141,10 @@ def crawler_get_productlis(_titles,_links):
         
         
         if ahref is None:   
-            #print(h6)
-            #print('url is none')
             titles.append(h6.text) 
             links.append("")
             
         else:   
-            #print(h6)
-            #print(ahref.get('href'))
             titles.append(h6.text)
             links.append(ahref.get('href'))
     
@@ -174,10 +161,7 @@ def crawler_get_productlis(_titles,_links):
     # dictransgolbal_tmp = pd.read_csv('transgolbal.csv',encoding = 'utf-8')
 
 
-        
-#//*[@class='list-product-block   space-element-top-default']/*//a[@class='dm-download-block']
-#pages=driver.find_elements_by_xpath("//li[@class='numberOfPage']/a")
-
+#分頁處理
 pages=driver.find_elements_by_xpath("//ul[@class='pageNumber pager']/*/a")
 counter=0
 
@@ -206,7 +190,7 @@ for page in pages:
          pages[counter].click()   
      #time.sleep(3)
 
-
+#將結果存檔
 results.to_csv(my_path+'transgolbal_tmp.csv',encoding = 'utf-8') #存檔
 merge_url_func(results)
 

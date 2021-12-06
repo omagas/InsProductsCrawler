@@ -3,7 +3,8 @@
 """
 Created on Fri Dec 25 18:11:44 2020
 @ref:https://www.learncodewithmike.com/2020/02/python-email.htmlreg
-@author: apple
+@author: Louie
+@descript: smtp module for notify some diff of insurace products.
 """
 
 
